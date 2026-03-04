@@ -213,7 +213,7 @@ fn find_callers_treesitter(
 }
 
 /// Find all call sites of any symbol in `targets` across the codebase using a single walk.
-/// Returns tuples of (target_name, match) so callers know which symbol was matched.
+/// Returns tuples of (`target_name`, match) so callers know which symbol was matched.
 fn find_callers_batch(
     targets: &HashSet<String>,
     scope: &Path,
@@ -306,7 +306,7 @@ fn find_callers_batch(
 }
 
 /// Tree-sitter call site detection for a set of target symbols.
-/// Returns tuples of (matched_target_name, CallerMatch).
+/// Returns tuples of (`matched_target_name`, `CallerMatch`).
 fn find_callers_treesitter_batch(
     path: &Path,
     targets: &HashSet<String>,
