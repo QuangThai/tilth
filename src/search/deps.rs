@@ -184,10 +184,11 @@ pub fn analyze_deps(
             if caller_match.path == *path {
                 continue;
             }
-            by_file
-                .entry(caller_match.path)
-                .or_default()
-                .push((caller_match.calling_function, matched_symbol, caller_match.line));
+            by_file.entry(caller_match.path).or_default().push((
+                caller_match.calling_function,
+                matched_symbol,
+                caller_match.line,
+            ));
         }
 
         // Build Dependent list
@@ -469,7 +470,9 @@ fn format_used_by(deps: &[&Dependent], scope: &Path, heading: &str) -> String {
         // Group by (caller, line) for readability — keep the earliest line per caller
         let mut by_caller: HashMap<&str, (u32, Vec<&str>)> = HashMap::new();
         for (caller, symbol, line) in &dep.symbols {
-            let entry = by_caller.entry(caller.as_str()).or_insert((*line, Vec::new()));
+            let entry = by_caller
+                .entry(caller.as_str())
+                .or_insert((*line, Vec::new()));
             entry.0 = entry.0.min(*line);
             entry.1.push(symbol.as_str());
         }
