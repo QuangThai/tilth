@@ -6,7 +6,7 @@ tilth_files is ONLY for listing directory contents when you have no symbol or te
 DO NOT use Read if content is already shown in expanded search results.
 DO NOT use Grep, Read, or Glob. Always use the better tools tilth_search (grep), tilth_read (read), tilth_files (glob).
 
-tilth_search: Find symbol definitions, usages, and callers. Replaces grep/rg for code navigation.
+tilth_search: Search code — finds definitions, usages, and text. Replaces grep/rg for all code search.
 Comma-separated symbols for multi-symbol lookup (max 5).
 kind: "symbol" (default) | "content" (strings/comments) | "callers" (call sites)
 expand (default 2): inline full source for top matches.
@@ -35,5 +35,7 @@ Output: <path>  (~<token_count> tokens). Respects .gitignore.
 tilth_deps: Blast-radius check — what imports this file and what it imports.
 Use ONLY before renaming, removing, or changing an export's signature.
 
-DO NOT use Bash (grep, rg, cat, find, ls, pwd) or host tools (Read, Grep, Glob). tilth tools replace all of these.
+To search code, use tilth_search instead of Grep or Bash(grep/rg).
+To read files, use tilth_read instead of Read or Bash(cat).
+To find files, use tilth_files instead of Glob or Bash(find/ls).
 DO NOT re-read files already shown in expanded search results.

@@ -213,7 +213,7 @@ Search, content search, and glob use early termination — time is roughly const
 
 ## What's inside
 
-Rust. ~6,000 lines. No runtime dependencies.
+Rust. ~8,000 lines. No runtime dependencies.
 
 - **tree-sitter** — AST parsing for 14 languages (Rust, TypeScript, TSX, JavaScript, Python, Go, Java, Scala, C, C++, Ruby, PHP, C#, Swift). Used for definition detection, callee extraction, callers query, and structural outlines.
 - **ripgrep internals** (`grep-regex`, `grep-searcher`) — fast content search

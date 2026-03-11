@@ -13,7 +13,7 @@ src/
   read/
     mod.rs             File reading with smart view (full vs outline based on token count).
     outline/
-      code.rs          Tree-sitter outlines for 12 languages. outline_language() maps Lang → grammar.
+      code.rs          Tree-sitter outlines for 14 languages. outline_language() maps Lang → grammar.
       markdown.rs      Markdown heading-based outlines.
       structured.rs    JSON/YAML/TOML structured outlines.
       test_file.rs     Test file detection (suppresses outline noise).
