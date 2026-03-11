@@ -58,20 +58,15 @@ DO NOT re-read files already shown in expanded search results.";
 
 const EDIT_MODE_EXTRA: &str = "\n\
 \n\
-IMPORTANT: Always use tilth tools instead of host built-in tools (Read, Edit, Grep, Glob) for all file operations.\n\
-tilth_read output contains line:hash anchors that tilth_edit depends on.\n\
-\n\
-HASHLINE FORMAT: tilth_read returns lines as `<line>:<hash>|<content>`.\n\
-The anchor (`<line>:<hash>`) is line number + 3-char content checksum.\n\
-\n\
-EDIT WORKFLOW:\n\
-1. tilth_read → get hashlined content\n\
-2. tilth_edit → pass anchors: {\"start\": \"<line>:<hash>\", \"content\": \"<new code>\"}\n\
-   Range: {\"start\": \"<line>:<hash>\", \"end\": \"<line>:<hash>\", \"content\": \"...\"}\n\
-   Delete: {\"start\": \"<line>:<hash>\", \"content\": \"\"}\n\
-3. Hash mismatch → file changed, re-read and retry\n\
-\n\
-LARGE FILES: tilth_read returns outline (no hashlines). Use section to get hashlined content.";
+tilth_edit: Edit files using hash-anchored lines. Replaces the host Edit tool.\n\
+  tilth_read → copy anchors (<line>:<hash>) → pass to tilth_edit.\n\
+  Single line: {\"start\": \"<line>:<hash>\", \"content\": \"<new code>\"}\n\
+  Range: {\"start\": \"<line>:<hash>\", \"end\": \"<line>:<hash>\", \"content\": \"...\"}\n\
+  Delete: {\"start\": \"<line>:<hash>\", \"content\": \"\"}\n\
+  Hash mismatch → file changed, re-read and retry.\n\
+  Large files: tilth_read shows outline — use section to get hashlined content.\n\
+  After editing a function signature, tilth_edit shows callers that may need updating.\n\
+DO NOT use the host Edit tool. Use tilth_edit for all edits.";
 
 /// MCP server over stdio. When `edit_mode` is true, exposes `tilth_edit` and
 /// switches `tilth_read` to hashline output format.
