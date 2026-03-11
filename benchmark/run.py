@@ -369,18 +369,25 @@ Examples:
                         current_run += 1
                         run_id = f"{task_name}/{mode_name}/{model_name}/rep{rep}"
 
-                        # Reset repo if needed (only for synthetic edit tasks)
-                        needs_reset = False
-                        if task.repo == "synthetic":
-                            if task.task_type == "edit":
+                        # Reset repo and apply mutations for edit tasks
+                        if task.task_type == "edit":
+                            repo_path = get_repo_path(task.repo)
+                            if task.repo == "synthetic":
                                 if rep > 0 or mode_name != prev_mode or task_name != prev_task:
-                                    needs_reset = True
-                            elif mode_name != prev_mode:
-                                needs_reset = True
-
-                        if needs_reset:
-                            if args.verbose:
-                                print(f"  Resetting repo...")
+                                    if args.verbose:
+                                        print(f"  Resetting synthetic repo...")
+                                    reset_repo()
+                            else:
+                                # Real repos: always clean + re-mutate before each run
+                                if args.verbose:
+                                    print(f"  Resetting {task.repo}...")
+                                ensure_repo_clean(repo_path)
+                            # Apply mutations (if any) after clean state
+                            if task.mutations:
+                                if args.verbose:
+                                    print(f"  Applying {len(task.mutations)} mutation(s)...")
+                                task.apply_mutations(str(repo_path))
+                        elif task.repo == "synthetic" and mode_name != prev_mode:
                             reset_repo()
 
                         prev_task = task_name
