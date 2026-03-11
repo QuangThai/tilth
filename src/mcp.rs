@@ -58,20 +58,15 @@ DO NOT re-read files already shown in expanded search results.";
 
 const EDIT_MODE_EXTRA: &str = "\n\
 \n\
-IMPORTANT: Always use tilth tools instead of host built-in tools (Read, Edit, Grep, Glob) for all file operations.\n\
-tilth_read output contains line:hash anchors that tilth_edit depends on.\n\
-\n\
-HASHLINE FORMAT: tilth_read returns lines as `<line>:<hash>|<content>`.\n\
-The anchor (`<line>:<hash>`) is line number + 3-char content checksum.\n\
-\n\
-EDIT WORKFLOW:\n\
-1. tilth_read → get hashlined content\n\
-2. tilth_edit → pass anchors: {\"start\": \"<line>:<hash>\", \"content\": \"<new code>\"}\n\
-   Range: {\"start\": \"<line>:<hash>\", \"end\": \"<line>:<hash>\", \"content\": \"...\"}\n\
-   Delete: {\"start\": \"<line>:<hash>\", \"content\": \"\"}\n\
-3. Hash mismatch → file changed, re-read and retry\n\
-\n\
-LARGE FILES: tilth_read returns outline (no hashlines). Use section to get hashlined content.";
+tilth_edit: Edit files using hash-anchored lines. Replaces the host Edit tool.\n\
+  tilth_read → copy anchors (<line>:<hash>) → pass to tilth_edit.\n\
+  Single line: {\"start\": \"<line>:<hash>\", \"content\": \"<new code>\"}\n\
+  Range: {\"start\": \"<line>:<hash>\", \"end\": \"<line>:<hash>\", \"content\": \"...\"}\n\
+  Delete: {\"start\": \"<line>:<hash>\", \"content\": \"\"}\n\
+  Hash mismatch → file changed, re-read and retry.\n\
+  Large files: tilth_read shows outline — use section to get hashlined content.\n\
+  After editing a function signature, tilth_edit shows callers that may need updating.\n\
+DO NOT use the host Edit tool. Use tilth_edit for all edits.";
 
 /// MCP server over stdio. When `edit_mode` is true, exposes `tilth_edit` and
 /// switches `tilth_read` to hashline output format.
@@ -230,7 +225,7 @@ pub(crate) fn dispatch_tool(
         "tilth_deps" => tool_deps(args, cache, bloom),
         "tilth_map" => Err("tilth_map is disabled — use tilth_search instead".into()),
         "tilth_session" => tool_session(args, session),
-        "tilth_edit" if edit_mode => tool_edit(args, session),
+        "tilth_edit" if edit_mode => tool_edit(args, session, cache, bloom),
         _ => Err(format!("unknown tool: {tool}")),
     }
 }
@@ -441,7 +436,12 @@ fn tool_session(args: &Value, session: &Session) -> Result<String, String> {
     }
 }
 
-fn tool_edit(args: &Value, session: &Session) -> Result<String, String> {
+fn tool_edit(
+    args: &Value,
+    session: &Session,
+    _cache: &OutlineCache,
+    bloom: &Arc<BloomFilterCache>,
+) -> Result<String, String> {
     let path_str = args
         .get("path")
         .and_then(|v| v.as_str())
@@ -486,7 +486,19 @@ fn tool_edit(args: &Value, session: &Session) -> Result<String, String> {
     session.record_read(&path);
 
     match crate::edit::apply_edits(&path, &edits).map_err(|e| e.to_string())? {
-        crate::edit::EditResult::Applied(output) => Ok(output),
+        crate::edit::EditResult::Applied(mut output) => {
+            let abs_path = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
+            let scope = crate::search::package_root(&abs_path).map_or_else(
+                || std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+                std::path::Path::to_path_buf,
+            );
+
+            if let Some(blast) = crate::search::blast::blast_radius(&path, &edits, &scope, bloom) {
+                output.push_str(&blast);
+            }
+
+            Ok(output)
+        }
         crate::edit::EditResult::HashMismatch(msg) => Err(format!(
             "hash mismatch — file changed since last read:\n\n{msg}"
         )),
