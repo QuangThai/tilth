@@ -84,7 +84,7 @@ tilth_edit: Edit files using hash-anchored lines. Replaces the host Edit tool.\n
   Delete: {\"start\": \"<line>:<hash>\", \"content\": \"\"}\n\
   Hash mismatch → file changed, re-read and retry.\n\
   Large files: tilth_read shows outline — use section to get hashlined content.\n\
-  After editing, tilth_edit returns a compact diff (old/new lines) followed by hashlined context.\n\
+  Pass diff: true to see a compact before/after diff in the response.\n\
   After editing a function signature, tilth_edit shows callers that may need updating.\n\
 DO NOT use the host Edit tool. Use tilth_edit for all edits.";
 
@@ -527,7 +527,7 @@ fn tool_edit(
     let show_diff = args
         .get("diff")
         .and_then(serde_json::Value::as_bool)
-        .unwrap_or(true);
+        .unwrap_or(false);
 
     session.record_read(&path);
 
@@ -867,8 +867,8 @@ fn tool_definitions(edit_mode: bool) -> Vec<Value> {
                     },
                     "diff": {
                         "type": "boolean",
-                        "default": true,
-                        "description": "Show compact diff of changes. Set false to suppress diff output and save tokens."
+                        "default": false,
+                        "description": "Set true to include a compact diff of changes in the response. Useful for batch edits or verifying unexpected results."
                     }
                 }
             }
